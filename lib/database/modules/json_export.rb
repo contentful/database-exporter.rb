@@ -12,7 +12,7 @@ module Contentful
         def save_object_to_file(table, content_type_name, model_name, type)
           content_type_name = I18n.transliterate(content_type_name).underscore.tr(' ', '_')
           create_directory("#{type}/#{content_type_name}")
-          config.db[table].all.each_with_index do |row, index|
+          config.db[table].each_with_index do |row, index|
             index = index + 1
             result = transform_row_into_hash(model_name, content_type_name, row, index)
             write_json_to_file("#{type}/#{content_type_name}/#{result[:id]}.json", result)

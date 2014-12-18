@@ -1,0 +1,7 @@
+{
+  "id": "model_name_12",
+  "name": "Test name",
+  "description": "awesome exporter",
+  "rate": 100,
+  "database_id": 12
+}

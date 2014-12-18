@@ -1,1 +1,4 @@
-{}
+{
+  "CHECK": "README.md",
+  "You can find an example of contentful structure at": "spec/fixtures/settings/contentful_structure.json"
+}

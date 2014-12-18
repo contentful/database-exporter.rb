@@ -11,3 +11,6 @@ module Command
 
   end
 end
+#
+# setting_file = YAML.load_file('example_data/example_settings.yml')
+# Migrator.new(setting_file).run('--prepare-json')

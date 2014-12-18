@@ -1,18 +1,4 @@
 {
-    "ExampleModelName": {
-        "content_type": "model name",
-        "type": "entry",
-        "fields": {
-        },
-        "links": {
-        }
-    },
-    "ExampleModelNameTwo": {
-        "content_type": "model name two",
-        "type": "entry",
-        "fields": {
-        },
-        "links": {
-        }
-    }
+  "CHECK": "README.md",
+  "You can find an example of mapping structure at": "spec/fixtures/settings/mapping.json"
 }

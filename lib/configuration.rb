@@ -64,8 +64,8 @@ module Contentful
     end
 
     def define_adapter
-      %w(adapter user host database).each do |param|
-        fail ArgumentError, "Set database connection parameters [adapter, host, database, user, password]. Missing the '#{param}' parameter! Password is optional. Check README!" unless config[param]
+      %w(adapter host database).each do |param|
+        fail ArgumentError, "Set database connection parameters [adapter, host, database, user, password]. Missing the '#{param}' parameter! Password and User are optional. Check README!" unless config[param]
       end
     end
 

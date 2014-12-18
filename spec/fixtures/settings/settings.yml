@@ -1,0 +1,27 @@
+#PATH to all data
+data_dir: spec/fixtures/database/data
+
+#Connecting to a database
+adapter: sqlite
+host: localhost
+database: spec/fixtures/development.sqlite3
+user: username
+password: password
+
+# Extract data from models:
+mapped:
+  tables:
+  - :users
+  - :skills
+  - :comments
+  - :images
+  - :job_adds
+  - :profiles
+
+## MAPPING ##
+mapping_dir: spec/fixtures/settings/mapping.json
+contentful_structure_dir: spec/fixtures/settings//contentful_structure.json
+
+## CONVERT
+content_model_json: spec/fixtures/settings/contentful_model.json
+import_form_dir: spec/fixtures/settings/contentful_structure_test.json

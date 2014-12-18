@@ -4,20 +4,21 @@ data_dir: PATH_TO_ALL_DATA
 #Connecting to a database
 adapter: mysql2
 host: localhost
-database: database_name
-user: username
-password: password
+database: db_name
+user: database_username
+password: database_password
 
 # Extract data from models:
 mapped:
   tables:
-  - :table_name
-  - :table_name_2
+  - :example_table_name
+  - :example_table_name_two
+  - :example_table_name_three
 
 ## MAPPING ##
-mapping_dir: PATH_TO_FILE/mapping.json
-contentful_structure_dir: PATH_TO_FILE/contentful_structure.json
+mapping_dir: example_data/mapping.json
+contentful_structure_dir: example_data/contentful_structure.json
 
 ## CONVERT
-content_model_json: PATH_TO_FILE/contentful_model.json
-import_form_dir: PATH_TO_FILE/contentful_structure.json
+content_model_json: example_data/contentful_model.json
+import_form_dir: example_data/contentful_structure.json

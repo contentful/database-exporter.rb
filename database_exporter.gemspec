@@ -26,7 +26,10 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'pg', '~> 0.17.0'
   spec.add_dependency 'escort','~> 0.4.0'
   spec.add_dependency 'i18n', '~> 0.6'
+  spec.add_dependency 'sqlite3', '~> 1.3.10'
 
+  spec.add_development_dependency 'rspec', '~> 3'
+  spec.add_development_dependency 'rspec-its', '~> 1.1.0'
   spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'rake'
 end

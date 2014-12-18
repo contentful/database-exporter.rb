@@ -34,7 +34,7 @@ module Contentful
         end
 
         def save_foreign_keys(related_model, primary_id, related_model_id)
-          results = config.db[related_model.underscore.to_sym].all.each_with_object({}) do |row, results|
+          results = config.db[related_model.underscore.to_sym].each_with_object({}) do |row, results|
             add_index_to_helper_hash(results, row, primary_id, related_model_id)
           end
           write_json_to_file(config.helpers_dir + "/#{primary_id}_#{related_model.underscore}.json", results)
@@ -47,12 +47,12 @@ module Contentful
           else
             results[row[primary_id]] << row[id] if row[id]
           end
+          results
         end
 
         def map_relations_to_links(model_name, relations)
           records = 0
-
-          model_subdirectory = I18n.transliterate(model_content_type(model_name)).underscore.tr(' ','_')
+          model_subdirectory = I18n.transliterate(model_content_type(model_name)).underscore.tr(' ', '_')
           Dir.glob("#{config.entries_dir}/#{model_subdirectory}/*json") do |entry_path|
             map_entry_relations(entry_path, model_name, relations, records)
             records += 1
@@ -111,11 +111,31 @@ module Contentful
         end
 
         def contentful_field_attribute(model_name, associated_model, type)
+          contentful_model_hash(model_name)
+          contentful_model_fields(model_name)
+          contentful_associated_model_name(model_name, associated_model)
+          contentful_associated_parameters(model_name, associated_model)
           config.contentful_structure[model_content_type(model_name)][:fields][model_content_type(associated_model)][type]
         end
 
+        def contentful_model_hash(model_name)
+          fail ArgumentError, "Missing #{model_name} in contentful structure JSON file" unless config.contentful_structure[model_content_type(model_name)]
+        end
+
+        def contentful_model_fields(model_name)
+          fail ArgumentError, "Missing fields in #{model_name} in contentful structure JSON file" unless config.contentful_structure[model_content_type(model_name)][:fields]
+        end
+
+        def contentful_associated_model_name(model_name, associated_model)
+          fail ArgumentError, "Missing associated model content type name for #{model_name} in MAPPING JSON file" unless model_content_type(associated_model)
+        end
+
+        def contentful_associated_parameters(model_name, associated_model)
+          fail ArgumentError, "Missing link field for #{model_content_type(associated_model)} in #{model_name} in contentful structure JSON file!" unless config.contentful_structure[model_content_type(model_name)][:fields][model_content_type(associated_model)]
+        end
+
         def save_belongs_to_entries(linked_model, ct_link_type, ct_field_id, entry, entry_path)
-          content_type = I18n.transliterate(model_content_type(linked_model[:relation_to])).underscore.tr(' ','_')
+          content_type = I18n.transliterate(model_content_type(linked_model[:relation_to])).underscore.tr(' ', '_')
           foreign_id = linked_model[:foreign_id]
           if entry[foreign_id].present?
             case ct_link_type
@@ -134,17 +154,17 @@ module Contentful
 
         def save_many_entries(linked_model, ct_field_id, entry, entry_path, related_to, ct_type)
           related_model = linked_model[related_to].underscore
-          contentful_name = I18n.transliterate(model_content_type(linked_model[:relation_to])).underscore.tr(' ','_')
+          contentful_name = I18n.transliterate(model_content_type(linked_model[:relation_to])).underscore.tr(' ', '_')
           objects = entry[ct_field_id] || []
           associated_objects = add_associated_object_to_file(entry, related_model, contentful_name, linked_model[:primary_id], ct_type)
           objects.concat(associated_objects) if objects.present? && associated_objects.present? && objects.is_a?(Array)
           save_objects = objects.present? ? objects : associated_objects
-            write_json_to_file(entry_path, entry.merge!(ct_field_id => save_objects)) if save_objects.present?
+          write_json_to_file(entry_path, entry.merge!(ct_field_id => save_objects)) if save_objects.present?
         end
 
         def save_has_one_entry(linked_model, ct_field_id, entry, entry_path, related_to, ct_type)
           related_model = linked_model[related_to].underscore
-          contentful_name = I18n.transliterate(model_content_type(linked_model[:relation_to])).underscore.tr(' ','_')
+          contentful_name = I18n.transliterate(model_content_type(linked_model[:relation_to])).underscore.tr(' ', '_')
           associated_object = add_associated_object_to_file(entry, related_model, contentful_name, linked_model[:primary_id], ct_type)
           write_json_to_file(entry_path, entry.merge!(ct_field_id => associated_object.first)) if associated_object.present?
         end
@@ -186,24 +206,15 @@ module Contentful
           associated_objects
         end
 
-        ########################################################
         def aggregate_data(model_name, linked_model, entry, entry_path, related_to)
           ct_field_id = contentful_field_attribute(model_name, linked_model[:relation_to], :id)
           save_aggregated_entries(linked_model, ct_field_id, entry, entry_path, related_to)
         end
 
-        def aggregate_belongs(linked_model, entry, entry_path, related_to)
-          save_aggregate_belongs_entries(linked_model, entry, entry_path, related_to) if entry[linked_model[:primary_id]]
-        end
-
         def aggregate_has_one(linked_model, entry, entry_path, related_to)
-          aggregate_has_one_entries(linked_model, entry, entry_path, related_to)
-        end
-
-        def aggregate_has_one_entries(linked_model, entry, entry_path, related_to)
           ct_field_id = linked_model[:save_as] || linked_model[:field]
           related_model = linked_model[related_to].underscore
-          related_model_directory = I18n.transliterate(mapping[linked_model[related_to]][:content_type]).underscore.tr(' ','_')
+          related_model_directory = I18n.transliterate(mapping[linked_model[related_to]][:content_type]).underscore.tr(' ', '_')
           save_aggregated_has_one_data(entry_path, entry, related_model, related_model_directory, linked_model, ct_field_id)
         end
 
@@ -217,20 +228,23 @@ module Contentful
           end
         end
 
-        def save_aggregate_belongs_entries(linked_model, entry, entry_path, related_to)
-          related_model = linked_model[related_to]
-          ct_field_id = linked_model[:save_as] || linked_model[:field]
-          related_model_directory = I18n.transliterate(mapping[related_model][:content_type]).underscore.tr(' ','_')
-          associated_foreign_key = related_model_directory + '_' + entry[linked_model[:primary_id]].to_s
-          associated_object = JSON.parse(File.read("#{config.entries_dir}/#{related_model_directory}/#{associated_foreign_key}.json"))[linked_model[:field]]
-          write_json_to_file(entry_path, entry.merge!(ct_field_id => associated_object))
+        def aggregate_belongs(linked_model, entry, entry_path, related_to)
+          if entry[linked_model[:primary_id]]
+            related_model = linked_model[related_to]
+            ct_field_id = linked_model[:save_as] || linked_model[:field]
+            related_model_directory = I18n.transliterate(mapping[related_model][:content_type]).underscore.tr(' ', '_')
+            associated_foreign_key = related_model_directory + '_' + entry[linked_model[:primary_id]].to_s
+            associated_object = JSON.parse(File.read("#{config.entries_dir}/#{related_model_directory}/#{associated_foreign_key}.json"))[linked_model[:field]]
+            write_json_to_file(entry_path, entry.merge!(ct_field_id => associated_object))
+          end
         end
 
         def save_aggregated_entries(linked_model, ct_field_id, entry, entry_path, related_to)
+          ct_field = linked_model['save_as'] || ct_field_id
           related_model = linked_model[related_to].underscore
           contentful_name = model_content_type(linked_model[:relation_to]).underscore
           associated_objects = save_aggregated_object_to_file(entry, related_model, contentful_name, linked_model)
-          write_json_to_file(entry_path, entry.merge!(ct_field_id => associated_objects)) if associated_objects.present?
+          write_json_to_file(entry_path, entry.merge!(ct_field => associated_objects)) if associated_objects.present?
         end
 
         def save_aggregated_object_to_file(entry, related_model, contentful_name, linked_model)

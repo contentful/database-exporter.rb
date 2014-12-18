@@ -1,4 +1,4 @@
-Contentful Generic-importer
+Database to Contentful exporter
 =================
 
 ## Description
@@ -16,18 +16,6 @@ gem install database-exporter
 This will install a ```database-exporter``` executable.
 
 ## Usage
-
-To use the tool you need to specify your Contentful credentials in a YAML file and database configuration .
-For example in a ```settings.yml``` file:
-
-``` yaml
-#Contentful
-ACCESS_TOKEN: access_token
-ORGANIZATION_ID: organization_id
-```
-
-**Your Contentful access token can be easiest created using the [Contentful Management API - documentation](https://www.contentful.com/developers/documentation/content-management-api/#getting-started)**
-The Contentful organization id can be found in your account settings.
 
 Once you installed the Gem and created the YAML file with the settings you can invoke the tool using:
 
@@ -53,7 +41,7 @@ Specify path, where the should be saved, you can do that in **settings.yml** fil
 
 In [settings.yml](https://github.com/contentful/generic-importer.rb#setting-file) file, you can define table names, which data you want to export from database. The easiest way to get table names is to use the command [--list-tables](https://github.com/contentful/generic-importer.rb#--list-tables)
 
-After we specify the tables, that we want to extract, and run command ```--export-json ```, each object from database will be save to separate JSON file.
+After you specify the tables, that you want to extract, run command ```--extract-to-json ```, each object from database will be save to separate JSON file.
 
 Path to JSON data: ***data_dir/entries/content_type_name_defined_in_mapping_json_file***
 
@@ -103,7 +91,7 @@ It will assign the associate object, save his ID ```(model_name + id)``` in JSON
 Result:
 ```
 {
-  "id": "comments_1",
+  "id": "model_name_ID",
   ...
   "job_add_id": {
     "type": "Entry",
@@ -235,7 +223,7 @@ Results:
 It will save value with key of related model
 ```
         "links": {
-            "many_through": [
+            "aggregate_belongs": [
                 {
                     "relation_to": "related_model_name",
                     "primary_id": "primary_key_name",
@@ -245,6 +233,55 @@ It will save value with key of related model
         }
 ```
 
+#### aggregate_has_one
+
+It will save value with key of related model
+```
+        "links": {
+            "aggregate_has_one": [
+                {
+                  "primary_id": "primary_id",
+                  "relation_to": "related_model_name",
+                  "field": "name_of_field_to_aggregate",
+                  "save_as": "save_as_field_name"
+                }
+            ]
+        }
+```
+
+#### aggregate_many
+
+It will save value with keys of related model
+```
+        "links": {
+            "aggregate_many": [
+                {
+                  "primary_id": "primary_id",
+                  "relation_to": "related_model_name",
+                  "field": "name_of_field_to_aggregate",
+                  "save_as": "save_as_field_name"
+                }
+            ]
+        }
+```
+
+#### aggregate_through
+
+It will save values with keys of related model
+```
+        "links": {
+            "aggregate_through": [
+                {
+                   "relation_to": "related_model_name",
+                   "primary_id": "primary_key_name",
+                   "foreign_id": "foreign_key_name",
+                   "through": "join_table_name",
+                   "field": '"name_of_field_to_aggregate",
+                   "save_as": "save_as_field_name"
+                }
+            ]
+        }
+```
 
 ## Contentful Structure
 
@@ -329,9 +366,9 @@ SQlite => sqlite
 
 **Define Exporter**
 
-By default we set Database Exporter. To change Exporter you need to specify addition argument ``` --exporter EXPORTER ```. For now there is only exporter available.
+By default we set Database Exporter.
 
-``` database-exporter --config-file settings.yml   --action ```
+``` database-exporter --config-file settings.yml --action ```
 
 #### Mapped tables
 
@@ -352,6 +389,8 @@ mapped:
   - :example_3
   - :example_4
 ```
+
+There is no need to give names of join table, unless you want to save them as separate content type.
 
 ### Mapping
 

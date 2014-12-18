@@ -19,6 +19,7 @@ module Contentful
         include Contentful::Exporter::Database::Utils
 
         Sequel::Model.plugin :json_serializer
+        Sequel.datetime_class = DateTime
 
         attr_reader :config, :mapping, :tables
 
@@ -32,14 +33,6 @@ module Contentful
           create_directory(config.data_dir)
           write_json_to_file("#{config.data_dir}/table_names.json", config.db.tables)
           puts "File with name of tables saved to #{"#{config.data_dir}/table_names.json"}"
-        end
-
-        def create_content_type_json
-          config.contentful_structure.each do |content_type, values|
-            content_type_name = content_type_name(content_type)
-            create_directory(config.collections_dir)
-            create_content_type_json_file(content_type_name, values)
-          end
         end
 
         def save_data_as_json
@@ -66,8 +59,6 @@ module Contentful
           fail ArgumentError, 'Before importing data from tables, define their names. Check README!' unless config.config['mapped'] && config.config['mapped']['tables']
           config.config['mapped']['tables']
         end
-
-
 
       end
     end

@@ -1,6 +1,7 @@
 require_relative 'database/export'
 require_relative 'configuration'
-require_relative 'converters/contentfulmodeltojson'
+require_relative 'converters/contentful_model_to_json'
+
 class Migrator
 
   attr_reader :exporter, :config, :converter

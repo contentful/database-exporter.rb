@@ -1,7 +1,5 @@
 require 'spec_helper'
 require './lib/database/export'
-require './spec/support/shared_configuration.rb'
-require './spec/support/db_rows_json.rb'
 
 module Contentful
   module Exporter

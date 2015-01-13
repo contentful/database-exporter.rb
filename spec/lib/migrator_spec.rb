@@ -1,6 +1,5 @@
 require 'spec_helper'
 require './lib/migrator'
-require './spec/support/db_rows_json.rb'
 
 describe Migrator do
 

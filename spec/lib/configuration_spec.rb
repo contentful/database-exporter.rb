@@ -1,6 +1,5 @@
 require 'spec_helper'
 require './lib/configuration'
-require './spec/support/shared_configuration.rb'
 
 module Contentful
   describe Configuration do

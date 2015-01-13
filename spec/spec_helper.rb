@@ -9,3 +9,4 @@ require 'rspec/its'
 require 'yaml'
 require 'json'
 
+Dir[File.dirname(__FILE__) + '/support/*.rb'].each { |f| require f }

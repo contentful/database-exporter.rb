@@ -69,7 +69,12 @@ To change name of model name field for new one, we need to add mapping for that 
 
 This method should only be used if this class contains the foreign key. If the other class contains the foreign key, then you should use has_one instead.
 
+At the beginning and we are looking for ```type``` and ```id``` of linked object in file ```contentful_structure.json```.
+It's very important to maintain consistency of names of Content type in ```mapping.json``` and ```contentful_structure.json```!
+The next step is to check if the object has defined a foreign key itself. After that an object with type and ID is created.
+
 Example:
+
 ```
     "Comments": {
         "content_type": "Comments",
@@ -89,6 +94,7 @@ Example:
 It will assign the associate object, save his ID ```(model_name + id)``` in JSON file.
 
 Result:
+
 ```
 {
   "id": "model_name_ID",
@@ -98,12 +104,14 @@ Result:
     "id": "model_name_3"
   },
 }
-
 ```
 
 #### has_one
 
 This method should only be used if the other class contains the foreign key. If the current class contains the foreign key, then you should use belongs_to instead.
+
+At the beginning and we build helper file which contains keys that are the object ID and the values are foreign ID. Path to this file is ```data_dir/helpers```.
+After that we modify only those files whose ID is located in the helper file as a key. Value is written as a Hash value.
 
  Example:
 
@@ -124,7 +132,8 @@ This method should only be used if the other class contains the foreign key. If 
      }
  ```
 
-Results:
+Result:
+
 It will assign the associate object, save his ID ```(model_name + id)``` in JSON file.
 
  ```
@@ -136,6 +145,13 @@ It will assign the associate object, save his ID ```(model_name + id)``` in JSON
  ```
 
 #### many
+
+This method should only be used if the other class contains the foreign key.
+
+At the beginning and we build helper file which contains keys that are the object ID and the values are foreign ID. Path to this file is ```data_dir/helpers```.
+After that we modify only those files whose ID is located in the helper file as a key. Related objects are written always as an Array.
+
+Example:
 
 ```
     "ModelName": {
@@ -154,9 +170,7 @@ It will assign the associate object, save his ID ```(model_name + id)``` in JSON
 
 It will assign the associate objects, save his ID ```(model_name + id)``` in JSON file.
 
-Results:
-
-Example:
+Result:
 ```
 {
   "id": "content_type_id",
@@ -183,9 +197,24 @@ Example:
 
 #### many_through
 
+At the beginning and we build helper file which contains keys that are the object IDs and the values are foreign IDs. Path to this file is ```data_dir/helpers```.
+After that we modify only those files whose ID is located in the helper file as a key. Related objects are written always as an Array.
+
+Attributes:
+
+```
+relation_to: Name of related model, defined in  mapping.json file as a key.
+primary_id: Name of primary key located in joining table.
+foreign_id: Name of foreign key, located in joining table. Object with this ID will be added mapped object.
+through: Name of joining model.
+```
+
+
 Example:
 
 ```
+    "ModelName": {
+        ...
         "links": {
             "many_through": [
                 {
@@ -200,7 +229,7 @@ Example:
 
 It will map join table and save objects IDs in current model.
 
-Results:
+Result:
 
 ```
   "content_type_name": [
@@ -218,24 +247,61 @@ Results:
     }
   ]
 ```
+
 #### aggregate_belongs
 
-It will save value with key of related model
+Too add selected value from related model.
+To add ```belongs_to``` value, object must have ```foreign_id``` of related model. Through this value the object is found and selected data is extracted.
+
+Attributes:
+
+```
+relation_to: Name of related model, defined in  mapping.json file as a key.
+primary_id: Name of primary key in model.
+field: Name of the attribute, which you want to add.
+save_as: Name of the attribute whose value is assigned.
+```
+
+Example:
+
 ```
         "links": {
             "aggregate_belongs": [
                 {
                     "relation_to": "related_model_name",
                     "primary_id": "primary_key_name",
-                    "field": "aggregated_field_name"
+                    "field": "aggregated_field_name",
+                    "save_as": "name_of_field"
                 }
             ]
         }
 ```
 
+Result:
+
+```
+{
+  "id": "model_name_id",
+   "name_of_field": "aggregated_value"
+}
+```
+
 #### aggregate_has_one
 
-It will save value with key of related model
+It will save value with key of related model.
+To add ```has_one``` value, related object must have ```primary_id``` of related model.
+
+Attributes:
+
+```
+relation_to: Name of related model, defined in  mapping.json file as a key.
+primary_id: Name of primary key in model.
+field: Name of the attribute, which you want to add.
+save_as: Name of the attribute whose value is assigned.
+```
+
+Example:
+
 ```
         "links": {
             "aggregate_has_one": [
@@ -249,9 +315,22 @@ It will save value with key of related model
         }
 ```
 
+Result:
+
+```
+{
+  "id": "model_name_id",
+   "name_of_field": "aggregated_value"
+}
+```
+
 #### aggregate_many
 
-It will save value with keys of related model
+It will save value with key of related model.
+To add ```has_many``` value, related object must have ```primary_id``` of related model. This will create a new attribute in model with Array type.
+
+Example:
+
 ```
         "links": {
             "aggregate_many": [
@@ -265,9 +344,35 @@ It will save value with keys of related model
         }
 ```
 
+Result:
+
+```
+{
+  "id": "model_name_id",
+   "name_of_field": ["aggregated_value1",
+                     "aggregated_value2",
+                     "aggregated_value3",
+                     "aggregated_value4"
+                     ]
+}
+```
+
 #### aggregate_through
 
-It will save values with keys of related model
+It will save value with key of related model.
+To add ```has_many, through ``` value, you need to define ```joining model``` which contains ```primary_id``` and ```foreign_id```. Through ```foreign_id``` the searched object will be find.
+
+Attributes:
+
+```
+relation_to: Name of related model, defined in  mapping.json file as a key.
+primary_id: Name of primary key located in joining table.
+foreign_id: Name of foreign key, located in joining table. Object with this ID will be added mapped object.
+through: Name of joining model.
+```
+
+Example:
+
 ```
         "links": {
             "aggregate_through": [
@@ -281,6 +386,19 @@ It will save values with keys of related model
                 }
             ]
         }
+```
+
+Result:
+
+```
+{
+  "id": "model_name_id",
+   "name_of_field": ["aggregated_value1",
+                     "aggregated_value2",
+                     "aggregated_value3",
+                     "aggregated_value4"
+                     ]
+}
 ```
 
 ## Contentful Structure

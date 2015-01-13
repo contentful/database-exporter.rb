@@ -1,7 +1,5 @@
 require 'spec_helper'
 require './lib/database/export'
-require './spec/support/shared_configuration.rb'
-require './spec/support/db_rows_json.rb'
 
 module Contentful
   module Exporter
@@ -143,6 +141,58 @@ module Contentful
                                       'entry_path',
                                       :relation_to,
                                       'entry')
+        end
+
+        it 'map_many_association' do
+          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', 'Comments', :id) { 'ct_field_id' }
+          expect_any_instance_of(Export).to receive(:save_many_entries).with({:relation_to => 'Comments',
+                                                                              :primary_id => 'job_add_id'},
+                                                                             'ct_field_id',
+                                                                             {'entry' => 'value'},
+                                                                             'entry_path',
+                                                                             'related_to', 'entry')
+          @exporter.map_many_association('model_name',
+                                         {relation_to: 'Comments', primary_id: 'job_add_id'},
+                                         {'entry' => 'value'},
+                                         'entry_path',
+                                         'related_to')
+        end
+
+        it 'aggregate_data' do
+          expect_any_instance_of(Export).to receive(:save_aggregated_entries).with(
+                                                {:relation_to => 'Comments', :primary_id => 'job_add_id'},
+                                                'ct_field_id',
+                                                {'entry' => 'value'},
+                                                'entry_path',
+                                                'related_to')
+          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', 'Comments', :id) { 'ct_field_id' }
+          @exporter.aggregate_data('model_name',
+                                   {:relation_to => 'Comments',
+                                    :primary_id => 'job_add_id'},
+                                   {'entry' => 'value'},
+                                   'entry_path',
+                                   'related_to')
+        end
+
+        it 'aggregate_has_one' do
+          expect_any_instance_of(Export).to receive(:mapping) { {'Comments' => {content_type: 'related model dir'}} }
+          expect_any_instance_of(Export).to receive(:save_aggregated_has_one_data).with('entry_path', {'entry' => 'value'}, 'comments', 'related_model_dir', {:relation_to => 'Comments', :primary_id => 'job_add_id', :field => 'test'}, 'test')
+          @exporter.aggregate_has_one({relation_to: 'Comments',
+                                       primary_id: 'job_add_id', field: 'test'},
+                                      {'entry' => 'value'},
+                                      'entry_path',
+                                      :relation_to)
+        end
+
+        it 'save_aggregated_entries' do
+          expect_any_instance_of(Export).to receive(:model_content_type) { 'comments' }
+          expect_any_instance_of(Export).to receive(:save_aggregated_object_to_file).with({'entry' => 'value'}, 'comments', 'comments', {:relation_to => 'Comments', :primary_id => 'job_add_id', :save_as => 'new_name'}) { [object: {type: 'entry'}] }
+          expect_any_instance_of(Export).to receive(:write_json_to_file).with('entry_path', {'entry' => 'value', 'ct_field_id' => [{:object => {:type => 'entry'}}]})
+          @exporter.save_aggregated_entries({:relation_to => 'Comments', :primary_id => 'job_add_id', save_as: 'new_name'},
+                                            'ct_field_id',
+                                            {'entry' => 'value'},
+                                            'entry_path',
+                                            :relation_to)
         end
 
       end

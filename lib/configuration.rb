@@ -3,8 +3,7 @@ require 'active_support/core_ext/hash'
 
 module Contentful
   class Configuration
-    attr_reader :space_id,
-                :config,
+    attr_reader :config,
                 :data_dir,
                 :collections_dir,
                 :entries_dir,
@@ -12,7 +11,7 @@ module Contentful
                 :contentful_structure,
                 :db,
                 :helpers_dir,
-                :import_form_dir,
+                :converted_model_dir,
                 :content_types
 
     def initialize(settings)
@@ -22,51 +21,45 @@ module Contentful
       @collections_dir = "#{data_dir}/collections"
       @entries_dir = "#{data_dir}/entries"
       @assets_dir = "#{data_dir}/assets"
-      @time_logs_dir = "#{data_dir}/logs/time.json"
-      @success_logs_dir = "#{data_dir}/logs"
-      @failure_logs_dir = "#{data_dir}/logs"
-      @threads_dir = "#{data_dir}/threads"
-      @space_id = config['space_id']
       @helpers_dir = "#{data_dir}/helpers"
-      @contentful_structure = JSON.parse(File.read(config['contentful_structure_dir']), symbolize_names: true).with_indifferent_access
+      @contentful_structure = load_contentful_structure_file
       @db = adapter_setup
-      @import_form_dir = config['import_form_dir']
+      @converted_model_dir = settings['converted_model_dir']
       @content_types = config['content_model_json']
     end
 
     def validate_required_parameters
-      define_data_dir
-      defined_contentful_structure
-      defined_mapping_structure
-      define_converted_content_model_dir
-      define_content_model_json
+      fail ArgumentError, 'Set PATH to data_dir. Folder where all data will be stored. View README' if config['data_dir'].nil?
+      fail ArgumentError, 'Set PATH to contentful structure JSON file. View README' if config['contentful_structure_dir'].nil?
+      fail ArgumentError, 'Set PATH to mapping structure JSON file. View README' if config['mapping_dir'].nil?
+      fail ArgumentError, 'Set PATH to Content model JSON file, which is downloaded structure from Contentful. View README' if config['converted_model_dir'].nil?
+      fail ArgumentError, 'Set PATH to converted contentful model and saved as JSON file. View README' if config['content_model_json'].nil?
       define_adapter
-    end
-
-    def define_data_dir
-      fail ArgumentError, 'Set PATH to data_dir. Folder where all data will be stored. Check README' if config['data_dir'].nil?
-    end
-
-    def defined_contentful_structure
-      fail ArgumentError, 'Set PATH to contentful structure JSON file. Check README' if config['contentful_structure_dir'].nil?
-    end
-
-    def defined_mapping_structure
-      fail ArgumentError, 'Set PATH to mapping structure JSON file. Check README' if config['mapping_dir'].nil?
-    end
-
-    def define_content_model_json
-      fail ArgumentError, 'Set PATH to Contentful dump JSON file with downloaded entire structure from Space. Check README' if config['import_form_dir'].nil?
-    end
-
-    def define_converted_content_model_dir
-      fail ArgumentError, 'Set PATH to converted contentful model and saved as JSON file. Check README' if config['content_model_json'].nil?
     end
 
     def define_adapter
       %w(adapter host database).each do |param|
-        fail ArgumentError, "Set database connection parameters [adapter, host, database, user, password]. Missing the '#{param}' parameter! Password and User are optional. Check README!" unless config[param]
+        fail ArgumentError, "Set database connection parameters [adapter, host, database, user, password]. Missing the '#{param}' parameter! Password and User are optional. View README!" unless config[param]
       end
+    end
+
+    # If contentful_structure JSON file exists, it will load the file. If not, it will automatically create an empty file.
+    # This file is required to convert contentful model to contentful import structure.
+    def load_contentful_structure_file
+      file_exists? ? load_existing_contentful_structure_file : create_empty_contentful_structure_file
+    end
+
+    def file_exists?
+      File.exists?(config['contentful_structure_dir'])
+    end
+
+    def create_empty_contentful_structure_file
+      File.open(settings['contentful_structure_dir'], 'w') { |file| file.write({}) }
+      load_existing_contentful_structure_file
+    end
+
+    def load_existing_contentful_structure_file
+      JSON.parse(File.read(config['contentful_structure_dir']), symbolize_names: true).with_indifferent_access
     end
 
     def adapter_setup

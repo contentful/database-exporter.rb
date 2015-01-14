@@ -21,7 +21,7 @@ module Contentful
 
         def transform_row_into_hash(model_name, content_type_name, row, index)
           id = row[:id] || index
-          puts "Saving #{content_type_name} - id: #{id}"
+          logger.info "Saving #{content_type_name} - id: #{id}"
           db_object = map_fields(model_name, row)
           db_object[:id] = model_id(model_name, content_type_name, id)
           db_object[:database_id] = id

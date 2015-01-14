@@ -67,7 +67,7 @@ module Contentful
 
         def map_entry_relations(entry_path, model_name, relations, record)
           relations.each do |relation_type, linked_models|
-            puts "Mapping #{model_name} - relation: #{relation_type} - #{linked_models}, record: #{record}" if record % 1000 == 0
+            logger.info "Mapping #{model_name} - relation: #{relation_type} - #{linked_models}, record: #{record}" if record % 1000 == 0
             map_entry_relation(entry_path, relation_type, linked_models, model_name)
           end
         end

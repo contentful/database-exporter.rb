@@ -19,7 +19,7 @@ shared_context 'shared_configuration', :a => :b do
           contentful_structure_dir: spec/fixtures/settings/contentful_structure.json
 
           content_model_json: spec/fixtures/settings/contentful_model.json
-          import_form_dir: spec/fixtures/settings/contentful_structure.json
+          converted_model_dir: spec/fixtures/settings/contentful_structure.json
     EOF
     yaml = YAML.load(yaml_text)
     @config = Contentful::Configuration.new(yaml)

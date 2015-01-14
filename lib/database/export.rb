@@ -21,18 +21,19 @@ module Contentful
         Sequel::Model.plugin :json_serializer
         Sequel.datetime_class = DateTime
 
-        attr_reader :config, :mapping, :tables
+        attr_reader :config, :mapping, :tables, :logger
 
         def initialize(settings)
           @config = settings
           @mapping = mapping_structure
           @tables = load_tables
+          @logger = Logger.new(STDOUT)
         end
 
         def tables_name
           create_directory(config.data_dir)
           write_json_to_file("#{config.data_dir}/table_names.json", config.db.tables)
-          puts "File with name of tables saved to #{"#{config.data_dir}/table_names.json"}"
+          logger.info "File with name of tables saved to #{"#{config.data_dir}/table_names.json"}"
         end
 
         def save_data_as_json

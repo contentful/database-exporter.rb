@@ -1,6 +1,6 @@
 module Contentful
   module Converter
-    class CreatorContentTypesJsonFiles
+    class ContentTypesStructureCreator
 
       attr_reader :config
 

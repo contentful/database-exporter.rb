@@ -21,4 +21,4 @@ contentful_structure_dir: example_data/contentful_structure.json
 
 ## CONVERT
 content_model_json: example_data/contentful_model.json
-import_form_dir: example_data/contentful_structure.json
+converted_model_dir: example_data/contentful_structure.json

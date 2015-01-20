@@ -607,7 +607,7 @@ converted_model_dir: contentful_import_files/contentful_structure.json
           'https://api.contentful.com/spaces/SPACE_ID/content_types' > contentful_model.json
     ```
 
-It will create a `contentful_model.json` file, which you need to transform into the `contentful_structure.json` file using:
+  It will create a `contentful_model.json` file, which you need to transform into the `contentful_structure.json`   file using:
 
     ```bash
     database-exporter --config-file settings.yml --convert-content-model-to-json
@@ -629,7 +629,7 @@ It will create a `contentful_model.json` file, which you need to transform into 
     database-exporter --config-file settings.yml --list-tables
     ```
 
-It will create the `table_names.json` file with the names of all tables contained in database.
+  It will create the `table_names.json` file with the names of all tables contained in database.
 
     Example:
 
@@ -667,7 +667,7 @@ It will create the `table_names.json` file with the names of all tables containe
     database-exporter --config-file settings.yml --extract-to-json
     ```
 
-   This will extract data from tables and store it as JSON. The `data_dir/entries` directory will be created with subdirectories that represent the data from each table.
+   This will extract data from tables and store it as JSON. The `data_dir/entries` directory will be created with    subdirectories that represent the data from each table.
    Subdirectories name depends on the *content_type* parameter contained in the mapping.json file.
 
 6. Mapping data to content types: The `mapping.json` file contains the structure of your database. All the relationships between the models need to be specified there.
@@ -679,6 +679,6 @@ It will create the `table_names.json` file with the names of all tables containe
     database-exporter --config-file settings.yml --prepare-json
     ```
 
-  It will change the structure of files in the `entries` directory. If the mapping has been done correctly, you can proceed to import the data into Contentful.
+  It will change the structure of files in the `entries` directory. If the mapping has been done correctly, you     can proceed to import the data into Contentful.
 
 7. Use the [contentful-importer](https://github.com/contentful/generic-importer.rb) to import the content to [contentful.com](https://www.contentful.com)

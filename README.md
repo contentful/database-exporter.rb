@@ -569,10 +569,10 @@ converted_model_dir: contentful_import_files/contentful_structure.json
 
 ## Step by step
 
-1. Create YAML file with required parameters (eg. settings.yml):
+1. Create a YAML file with the required parameters (eg. settings.yml):
 
     ```yml
-    #PATH to all data
+    #PATH to all data, this will create a folder in your current working directory
     data_dir: PATH_TO_ALL_DATA
 
     #Connecting to a database
@@ -599,41 +599,41 @@ converted_model_dir: contentful_import_files/contentful_structure.json
     converted_model_dir: example_data/contentful_structure.json
     ```
 
-2. Create the ```contentful_structure.json```. First you need to create a content model using the [contentful website](www.contentful.com). Then you can download the content model using the content management api and use as the schema for the import structure.
+2. Create the `contentful_structure.json` file: First you should create a content model using the [Contentful ](www.contentful.com) web application. Then you can download the content model using the content management api and use it as the schema for your imports.
 
     ```bash
      curl -X GET \
-          -H 'Authorization: Bearer ACCESS_TOKEN' \
+          -H 'Authorization: Bearer YOUR_ACCESS_TOKEN' \
           'https://api.contentful.com/spaces/SPACE_ID/content_types' > contentful_model.json
     ```
 
-    It will create ```contentful_model.json``` file, which you need to transform into the ```contentful_structure.json``` using:
+It will create a `contentful_model.json` file, which you need to transform into the `contentful_structure.json` file using:
 
-    ```
+    ```bash
     database-exporter --config-file settings.yml --convert-content-model-to-json
     ```
 
-    The converted content model will be saved as JSON file in the ```converted_model_dir``` path.
+    The converted content model will be saved as a JSON file in the `converted_model_dir` path.
 
-3. Create content types files. Based on the ```contentful_structure.json``` file, create content types json files, which represents your contentful structure, use:
+3. Create content types files: Based on the ```contentful_structure.json``` file, create content types json files, which represents your contentful structure, use:
 
-    ```
+    ```bash
     database-exporter --config-file settings.yml --create-content-model-from-json
     ```
     I will extract your content types and store it as separate JSON file in ```data_dir/collections``` directory.
 
-4. After filling required parameters for [connection to databases](https://github.com/contentful/database-adapter#database-connection---define-adapter), specify from which tables you want to extract the data.
-    You can skip ```joining table names```, if you will not assigned them to separate content type.
+4. After filling in the required parameters to [connect to the database](https://github.com/contentful/database-adapter#database-connection---define-adapter), the tables we want to fetch the content from needs to be specified.
+    You can skip `joining table names`, if you do not want to map them to a separate content type.
 
-    ```
+    ```bash
     database-exporter --config-file settings.yml --list-tables
     ```
 
-    It will create ```table_names.json``` file with the names of all tables contained in database.
+It will create the `table_names.json` file with the names of all tables contained in database.
 
     Example:
 
-    ```
+    ```javascript
     [
       "schema_migrations",
       "skills",
@@ -646,11 +646,11 @@ converted_model_dir: contentful_import_files/contentful_structure.json
     ]
     ```
 
-5. Extract data from database. Create ```mapping.json``` file with mapped the structure of your database.
+5. Extract data from database: Create the `mapping.json` file with the mapped the structure of your database.
 
     Example structure for `user` table.
 
-    ```
+    ```javascript
       "Users": {
         "content_type": "User",
         "type": "entry",
@@ -661,23 +661,24 @@ converted_model_dir: contentful_import_files/contentful_structure.json
       }
     ```
 
-    After defining the structure for each table, which you want to extract and save as JSON files, use:
+    After defining the structure for each table you want to extract in the JSON file, use:
 
-    ```
+    ```bash
     database-exporter --config-file settings.yml --extract-to-json
     ```
 
-   It will extract data from tables and store it as JSON. ```data_dir/entries``` directory will be created with subdirectories which represent data from each table.
-   Subdirectories name depends on the *content_type* parameter contained mapping.json file.
+   This will extract data from tables and store it as JSON. The `data_dir/entries` directory will be created with subdirectories that represent the data from each table.
+   Subdirectories name depends on the *content_type* parameter contained in the mapping.json file.
 
-6. Mapping part. Mapping.json file contains the structure of your database. All the relationships between the models need to be specified there.
-    A description of how to build relationships, [can be found here](https://github.com/contentful/database-adapter#relations-types).
-    To begin mapping procedure, use:
+6. Mapping data to content types: The `mapping.json` file contains the structure of your database. All the relationships between the models need to be specified there.
+    A description of how to build those relationships [can be found here](https://github.com/contentful/database-adapter#relations-types).
+    
+   To begin the mapping procedure, use:
 
-    ```
+    ```bash
     database-exporter --config-file settings.yml --prepare-json
     ```
 
-    It will change the structure of files in ```entries``` directory. If the mapping has been done correctly, you can proceed to import the data into Contentful.
+  It will change the structure of files in the `entries` directory. If the mapping has been done correctly, you can proceed to import the data into Contentful.
 
-7. Use the [Contentful-importer](https://github.com/contentful/generic-importer.rb) to import the content to [contentful.com](https://www.contentful.com)
+7. Use the [contentful-importer](https://github.com/contentful/generic-importer.rb) to import the content to [contentful.com](https://www.contentful.com)

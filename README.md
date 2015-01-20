@@ -30,10 +30,32 @@ database-exporter --config-file settings.yml  --action
 You need to create a configuration file and fill in the following information:
 
 ```yml
+#PATH to all data
 data_dir: PATH_TO_ALL_DATA
-table_names: PATH_TO_ALL_DATA/table_names.json
-```
 
+#Connecting to a database
+adapter: postgres
+host: localhost
+database: database_name
+user: username
+password: password
+
+# Extract data from models:
+mapped:
+  tables:
+  - :table_name_1
+  - :table_name_2
+  - :table_name_3
+
+## MAPPING ##
+mapping_dir: PATH_TO_MAPPING_FILE/mapping.json
+contentful_structure_dir: PATH_TO_CONTENTFUL_STURCTURE_FILE/contentful_structure.json
+
+## CONVERT
+content_model_json: PATH_TO_CONTENT_MODEL/contentful_model.json
+converted_model_dir: PATH_TO_CONVERTED_CONTENT_MODEL_FILE/contentful_structure.json
+
+```
 
 ## Actions
 
@@ -502,12 +524,6 @@ PostgreSQL => postgres
 MySQL => mysql2
 SQlite => sqlite
 ```
-
-**Define Exporter**
-
-The default command is the database export.
-
-``` database-exporter --config-file settings.yml --action ```
 
 #### Mapped tables
 

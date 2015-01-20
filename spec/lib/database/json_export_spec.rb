@@ -31,7 +31,7 @@ module Contentful
         end
 
         it 'format_value' do
-          result = @exporter.format_value('ü---test--string!')
+          result = @exporter.format_value('u---test--string!')
           expect(result).to eq 'u-test-string'
         end
 

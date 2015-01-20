@@ -3,57 +3,91 @@ Database to Contentful exporter
 
 ## Description
 
-Migrate data from database to the [Contentful](https://www.contentful.com) platform.
+Migrate content from a relational database to [Contentful.com](https://www.contentful.com).
 
-This tool fetch data from database and save as JSON files on your local hard drive. It will allow you to import database's data to Contentful.
+This tool allows you to fetch content from your database system and prepare it for the import.
+
 
 ## Installation
 
-``` bash
+```bash
 gem install database-exporter
 ```
 
-This will install a ```database-exporter``` executable.
+This will install the `database-exporter` executable on your system.
 
 ## Usage
 
-Once you installed the Gem and created the YAML file with the settings you can invoke the tool using:
+Once you installed the Gem and created the `settings.yml` file, you can invoke the tool using:
 
-```
+```bash
 database-exporter --config-file settings.yml  --action
 ```
 
-## Actions
-To display all actions in console, use command:
-```
-database-exporter -h
-```
-#### --list-tables
-This action will create JSON file with all table names from your database and save it to ```data_dir/table_names.json```. These values ​​will be needed to export data from the database.
 
-Specify path, where the should be saved, you can do that in **settings.yml** file.
+## Configuration File
+
+You need to create a configuration file and fill in the following information:
 
 ```yml
- data_dir: PATH_TO_ALL_DATA
- table_names: data_dir/table_names.json
+#PATH to all data
+data_dir: PATH_TO_ALL_DATA
+
+#Connecting to a database
+adapter: postgres
+host: localhost
+database: database_name
+user: username
+password: password
+
+# Extract data from models:
+mapped:
+  tables:
+  - :table_name_1
+  - :table_name_2
+  - :table_name_3
+
+## MAPPING ##
+mapping_dir: PATH_TO_MAPPING_FILE/mapping.json
+contentful_structure_dir: PATH_TO_CONTENTFUL_STURCTURE_FILE/contentful_structure.json
+
+## CONVERT
+content_model_json: PATH_TO_CONTENT_MODEL/contentful_model.json
+converted_model_dir: PATH_TO_CONVERTED_CONTENT_MODEL_FILE/contentful_structure.json
+
 ```
+
+## Actions
+
+To display all actions use the `-h` option:
+
+```bash
+database-exporter -h
+```
+
+#### --list-tables
+
+This action will create a JSON file including all table names from your database and write them to `data_dir/table_names.json`. The table names are needed to extract the content from the database.
+
 #### --extract-to-json
 
-In [settings.yml](https://github.com/contentful/generic-importer.rb#setting-file) file, you can define table names, which data you want to export from database. The easiest way to get table names is to use the command [--list-tables](https://github.com/contentful/generic-importer.rb#--list-tables)
+In the [settings.yml](https://github.com/contentful/generic-importer.rb#setting-file) file, you need to define the table names that should be exported from the database.
 
-After you specify the tables, that you want to extract, run command ```--extract-to-json ```, each object from database will be save to separate JSON file.
+The recommended way to get the table names, is using [--list-tables](https://github.com/contentful/database-adapter#--list-tables).
+
+After specifying the table names you want to extract in your settings, run the `--extract-to-json` command.
+This will save each object from the database into its own JSON file, ready to be transformed and imported.
 
 Path to JSON data: ***data_dir/entries/content_type_name_defined_in_mapping_json_file***
 
 #### --prepare-json
 
-Prepare JSON files to import form to Contentful platform.
+Prepares the generated JSON files so they can be imported to Contentful.
 
-# EXPORT PART
 
 ### FIELDS
 
-To change name of model name field for new one, we need to add mapping for that field:
+To change name of a field in the database for new one, we need to add a new mapping for that field:
 ```
  "fields": {
              "model_name": "new_api_contentful_field_name",
@@ -63,19 +97,21 @@ To change name of model name field for new one, we need to add mapping for that 
 ```
 
 
-### RELATIONS TYPES
+### Relation Types/Joins
+
+The following relational associations behave similar to the Active Record associations.
 
 #### belongs_to
 
-This method should only be used if this class contains the foreign key. If the other class contains the foreign key, then you should use has_one instead.
+The `belongs_to` method should only be used if this table contains the foreign key. If the other table contains the foreign key, then you should use `has_one` instead.
 
-At the beginning and we are looking for ```type``` and ```id``` of linked object in file ```contentful_structure.json```.
-It's very important to maintain consistency of names of Content type in ```mapping.json``` and ```contentful_structure.json```!
+At the beginning and we are looking for `type` and `id` of linked object in file `contentful_structure.json`.
+It's very important to maintain consistency for the content type names  in `mapping.json` and `contentful_structure.json`.
 The next step is to check if the object has defined a foreign key itself. After that an object with type and ID is created.
 
 Example:
 
-```
+```javascript
     "Comments": {
         "content_type": "Comments",
         "type": "entry",
@@ -90,12 +126,13 @@ Example:
                       ]
         }
     }
-```
-It will assign the associate object, save his ID ```(model_name + id)``` in JSON file.
+ ```
+
+It will assign the associated object and save its ID `(model_name + id)` in the JSON file.
 
 Result:
 
-```
+```javascript
 {
   "id": "model_name_ID",
   ...
@@ -108,70 +145,74 @@ Result:
 
 #### has_one
 
-This method should only be used if the other class contains the foreign key. If the current class contains the foreign key, then you should use belongs_to instead.
+The `has_one` method should be used if the other table contains the foreign key. If the current table contains the foreign key, then you should use belongs_to instead.
 
-At the beginning and we build helper file which contains keys that are the object ID and the values are foreign ID. Path to this file is ```data_dir/helpers```.
+At the beginning the tool builds a helper file which contains the primary id as key and the foreign id as values. This file lives in `data_dir/helpers`.
+
 After that we modify only those files whose ID is located in the helper file as a key. Value is written as a Hash value.
 
  Example:
 
- ```
-     "Users": {
-         "content_type": "Users",
-         "type": "entry",
-         "fields": {
-         },
-         "links": {
-             "has_one": [
-                 {
-                     "relation_to": "ModelName",
-                     "primary_id": "primary_key_name"
-                 }
-             ]
+```javascript
+"Users": {
+ "content_type": "Users",
+ "type": "entry",
+ "fields": {
+  ...
+ },
+ "links": {
+     "has_one": [
+         {
+             "relation_to": "ModelName",
+             "primary_id": "primary_key_name"
          }
-     }
- ```
+     ]
+ }
+}
+```
 
 Result:
 
-It will assign the associate object, save his ID ```(model_name + id)``` in JSON file.
+It will assign the associated object, save his ID ```(model_name + id)``` in JSON file.
 
- ```
- ...
-  "model_name": {
+```javascript
+...
+"model_name": {
     "type": "profiles",
     "id": "content_type_id_3"
-  }
- ```
+}
+```
+
 
 #### many
 
-This method should only be used if the other class contains the foreign key.
+The resulting file will be generated in a similar way as for the `has_one` relation.
+At the beginning the tool builds a helper file which contains the primary id as key and the foreign id as values. This file lives in `data_dir/helpers`.
 
-At the beginning and we build helper file which contains keys that are the object ID and the values are foreign ID. Path to this file is ```data_dir/helpers```.
 After that we modify only those files whose ID is located in the helper file as a key. Related objects are written always as an Array.
 
 Example:
 
-```
-    "ModelName": {
-    ...
-        },
-        "links": {
-            "many": [
-                        {
-                            "relation_to": "related_model_name",
-                            "primary_id": "primary_key_name"
-                        }
-                    ],
+```javascript
+"ModelName": {
+...
+},
+"links": {
+    "many": [
+                {
+                    "relation_to": "related_model_name",
+                    "primary_id": "primary_key_name"
                 }
+            ],
         }
+}
 ```
 
-It will assign the associate objects, save his ID ```(model_name + id)``` in JSON file.
+It will assign the associated objects, save its ID ```(model_name + id)``` in JSON file.
 
 Result:
-```
+
+```javascript
 {
   "id": "content_type_id",
   "comments": [
@@ -197,7 +238,7 @@ Result:
 
 #### many_through
 
-At the beginning and we build helper file which contains keys that are the object IDs and the values are foreign IDs. Path to this file is ```data_dir/helpers```.
+The resulting file will be generated in a similar way as for the `has_one` relation.
 After that we modify only those files whose ID is located in the helper file as a key. Related objects are written always as an Array.
 
 Attributes:
@@ -212,26 +253,27 @@ through: Name of joining model.
 
 Example:
 
-```
-    "ModelName": {
-        ...
-        "links": {
-            "many_through": [
-                {
-                    "relation_to": "related_model_name",
-                    "primary_id": "primary_key_name",
-                    "foreign_id": "foreign_key_name",
-                    "through": "join_table_name"
-                }
-            ]
-        }
+```javascript
+"ModelName": {
+    ...
+    "links": {
+        "many_through": [
+            {
+                "relation_to": "related_model_name",
+                "primary_id": "primary_key_name",
+                "foreign_id": "foreign_key_name",
+                "through": "join_table_name"
+            }
+        ]
+    }
+}
 ```
 
-It will map join table and save objects IDs in current model.
+It will map the join table and save objects IDs in current model.
 
 Result:
 
-```
+```javascript
   "content_type_name": [
     {
       "type": "content_type_name",
@@ -250,8 +292,8 @@ Result:
 
 #### aggregate_belongs
 
-Too add selected value from related model.
-To add ```belongs_to``` value, object must have ```foreign_id``` of related model. Through this value the object is found and selected data is extracted.
+`aggregate_belongs` allows to fetch a value from an related model.
+To add the value, the table must have the `foreign_id` to the related table. Through this value the object is found and selected the wanted data is extracted.
 
 Attributes:
 
@@ -264,22 +306,22 @@ save_as: Name of the attribute whose value is assigned.
 
 Example:
 
-```
-        "links": {
-            "aggregate_belongs": [
-                {
-                    "relation_to": "related_model_name",
-                    "primary_id": "primary_key_name",
-                    "field": "aggregated_field_name",
-                    "save_as": "name_of_field"
-                }
-            ]
+```javascript
+"links": {
+    "aggregate_belongs": [
+        {
+            "relation_to": "related_model_name",
+            "primary_id": "primary_key_name",
+            "field": "aggregated_field_name",
+            "save_as": "name_of_field"
         }
+    ]
+}
 ```
 
 Result:
 
-```
+```javascript
 {
   "id": "model_name_id",
    "name_of_field": "aggregated_value"
@@ -288,8 +330,8 @@ Result:
 
 #### aggregate_has_one
 
-It will save value with key of related model.
-To add ```has_one``` value, related object must have ```primary_id``` of related model.
+It will save value with key of the related model.
+To add `has_one` value, the table must have `primary_id` of related table.
 
 Attributes:
 
@@ -302,22 +344,22 @@ save_as: Name of the attribute whose value is assigned.
 
 Example:
 
-```
-        "links": {
-            "aggregate_has_one": [
-                {
-                  "primary_id": "primary_id",
-                  "relation_to": "related_model_name",
-                  "field": "name_of_field_to_aggregate",
-                  "save_as": "save_as_field_name"
-                }
-            ]
+```javascript
+"links": {
+    "aggregate_has_one": [
+        {
+          "primary_id": "primary_id",
+          "relation_to": "related_model_name",
+          "field": "name_of_field_to_aggregate",
+          "save_as": "save_as_field_name"
         }
+    ]
+}
 ```
 
 Result:
 
-```
+```javascript
 {
   "id": "model_name_id",
    "name_of_field": "aggregated_value"
@@ -326,41 +368,42 @@ Result:
 
 #### aggregate_many
 
-It will save value with key of related model.
-To add ```has_many``` value, related object must have ```primary_id``` of related model. This will create a new attribute in model with Array type.
+It will save the value with key of related table.
+To add the `has_many` value, related table must have the `primary_id` of the related model. This will create a new attribute in model with the Array type.
 
 Example:
 
-```
-        "links": {
-            "aggregate_many": [
-                {
-                  "primary_id": "primary_id",
-                  "relation_to": "related_model_name",
-                  "field": "name_of_field_to_aggregate",
-                  "save_as": "save_as_field_name"
-                }
-            ]
+```javascript
+"links": {
+    "aggregate_many": [
+        {
+          "primary_id": "primary_id",
+          "relation_to": "related_model_name",
+          "field": "name_of_field_to_aggregate",
+          "save_as": "save_as_field_name"
         }
+    ]
+}
 ```
 
 Result:
 
-```
+```javascript
 {
-  "id": "model_name_id",
-   "name_of_field": ["aggregated_value1",
-                     "aggregated_value2",
-                     "aggregated_value3",
-                     "aggregated_value4"
-                     ]
+"id": "model_name_id",
+"name_of_field": [
+    "aggregated_value1",
+    "aggregated_value2",
+    "aggregated_value3",
+    "aggregated_value4"
+    ]
 }
 ```
 
 #### aggregate_through
 
 It will save value with key of related model.
-To add ```has_many, through ``` value, you need to define ```joining model``` which contains ```primary_id``` and ```foreign_id```. Through ```foreign_id``` the searched object will be find.
+To add the `has_many, through` value, you need to define the `join model` which contains `primary_id` and `foreign_id`. Through `foreign_id` the searched object will be found.
 
 Attributes:
 
@@ -373,41 +416,42 @@ through: Name of joining model.
 
 Example:
 
-```
-        "links": {
-            "aggregate_through": [
-                {
-                   "relation_to": "related_model_name",
-                   "primary_id": "primary_key_name",
-                   "foreign_id": "foreign_key_name",
-                   "through": "join_table_name",
-                   "field": '"name_of_field_to_aggregate",
-                   "save_as": "save_as_field_name"
-                }
-            ]
+```javascript
+"links": {
+    "aggregate_through": [
+        {
+           "relation_to": "related_model_name",
+           "primary_id": "primary_key_name",
+           "foreign_id": "foreign_key_name",
+           "through": "join_table_name",
+           "field": '"name_of_field_to_aggregate",
+           "save_as": "save_as_field_name"
         }
+    ]
+}
 ```
 
 Result:
 
-```
+```javascript
 {
-  "id": "model_name_id",
-   "name_of_field": ["aggregated_value1",
-                     "aggregated_value2",
-                     "aggregated_value3",
-                     "aggregated_value4"
-                     ]
+"id": "model_name_id",
+ "name_of_field": ["aggregated_value1",
+                   "aggregated_value2",
+                   "aggregated_value3",
+                   "aggregated_value4"
+                   ]
 }
 ```
 
 ## Contentful Structure
 
 This file represents our Contentful structure.
+This structure file defines the remote data types and how they are formed.
 
 Example:
 
-```
+```javascript
 {
     "Comments": {
         "id": "comment",
@@ -442,29 +486,28 @@ Example:
         }
     }
 ```
-Key names "Images", "Comments", "Skills" are the equivalent of the content types name specified in the file **mapping.json**.
+They keys "Images", "Comments", "Skills" are the equivalent of the content types IDs specified in the file **mapping.json**.
 
 Example:
-```
-``
-     "SkillsTableName": {
-         "content_type": "Skills",
-         "type": "entry",
-         "fields": { ... }
+```javascript
+"SkillsTableName": {
+    "content_type": "Skills",
+    "type": "entry",
+    "fields": { ... }
 ```
 
 **IMPORTANT**
 
-To create any relationship between objects, we must remember that the content names given in the  **mapping.json** file, must cover with names in **contentful_structure.json** file.
+To create any relationship between tables, we must remember that the content names given in the  **mapping.json** file, must be equal with names in the **contentful_structure.json** file.
 
 ## Setting file
 
-To use this tool, you need to create YML file and define all needed parameters.
+To be able to extract any content you need to create a `settings.yml` file and define all needed parameters.
 
 #### Database Connection - Define Adapter
 
-Assuming we are going to work with MySQL, SQlite or PostgreSQL database, before connecting to a database make sure of the setup YML file with settings.
-Following is the example of connecting with MySQL database "test_import"
+Assuming we are going to work with a MySQL, SQLite or PostgreSQL database we need to setup the credentials:
+Following is the example of connecting to a MySQL database `test_import`.
 
 ```yml
 adapter: mysql2
@@ -482,23 +525,19 @@ MySQL => mysql2
 SQlite => sqlite
 ```
 
-**Define Exporter**
-
-By default we set Database Exporter.
-
-``` database-exporter --config-file settings.yml --action ```
-
 #### Mapped tables
 
-Before export data from database, you need to exactly specify which tables will be exported.
-To fastest way to get that names is use command: [--list-tables](https://github.com/contentful/generic-importer.rb#--list-tables)
+Before we can start exporting the data from the database, the to be used tables need to be specified.
+The fastest way to get the names is using the [--list-tables](https://github.com/contentful/generic-importer.rb#--list-tables) action.
 
-Selected table names enter to **settings.yml** file, parameter
+Add those to the `settings.yml` file in the following manner:
+
  ```yml
 mapped:
     tables:
 ```
 Example:
+
  ```yml
 mapped:
  tables:
@@ -508,11 +547,11 @@ mapped:
   - :example_4
 ```
 
-There is no need to give names of join table, unless you want to save them as separate content type.
+There is no need to specify the names of a join table unless you want to save them as a separate content type.
 
 ### Mapping
 
-* JSON file with mapping structure which defines relations between models.
+* JSON file with mapping structure that defines relations between models.
 
 ```yml
 mapping_dir: example_path/mapping.json
@@ -522,11 +561,8 @@ mapping_dir: example_path/mapping.json
 ```yml
 contentful_structure_dir: contentful_import_files/contentful_structure.json
 ```
-* [Dump JSON file](https://github.com/contentful/generic-importer.rb#--convert-content-model-to-json) with content types from contentful model:
+* [Dump JSON file](https://github.com/contentful/generic-importer.rb#--convert-content-model-to-json) with content types from content model:
 
 ```yml
 import_form_dir: contentful_import_files/contentful_structure.json
 ```
-
-
-

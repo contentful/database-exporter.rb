@@ -6,6 +6,8 @@ module Contentful
 
       attr_reader :config, :logger
 
+      FIELD_TYPE = %w( Link Array )
+
       def initialize(settings)
         @config = settings
         @logger = Logger.new(STDOUT)
@@ -24,14 +26,14 @@ module Contentful
       def convert_to_import_form
         logger.info 'Converting Contentful model to Contentful import structure...'
         File.open(config.converted_model_dir, 'w') { |file| file.write({}) }
-        contentful_file = JSON.parse(File.read(config.content_types))['items']
-        contentful_file.each do |content_type|
+        content_type_file = JSON.parse(File.read(config.content_types))['items']
+        content_type_file.each do |content_type|
           parsed_content_type = {
               id: content_type['sys']['id'],
               name: content_type['name'],
               description: content_type['description'],
               displayField: content_type['displayField'],
-              fields: {}.merge!(create_contentful_fields(content_type))
+              fields: create_content_type_fields(content_type)
           }
           import_form = JSON.parse(File.read(config.converted_model_dir))
           File.open(config.converted_model_dir, 'w') do |file|
@@ -41,7 +43,7 @@ module Contentful
         logger.info "Done! Contentful import structure file saved in #{config.converted_model_dir}"
       end
 
-      def create_contentful_fields(content_type)
+      def create_content_type_fields(content_type)
         content_type['fields'].each_with_object({}) do |(field, _value), results|
           id = link_id(field)
           results[id] = case field['type']
@@ -56,7 +58,7 @@ module Contentful
       end
 
       def link_id(field)
-        if %w( Link Array ).include? field['type']
+        if FIELD_TYPE.include? field['type']
           field['name'].capitalize
         else
           field['id']

@@ -1,4 +1,119 @@
 {
-  "CHECK": "README.md",
-  "You can find an example of mapping structure at": "spec/fixtures/settings/mapping.json"
+  "JobAdds": {
+    "content_type": "Jobs",
+    "type": "entry",
+    "fields": {
+      "title": "name",
+      "description": "specification"
+    },
+    "links": {
+      "aggregate_belongs": [
+        {
+          "relation_to": "Users",
+          "primary_id": "user_id",
+          "field": "first_name"
+        }
+      ],
+      "aggregate_many": [
+        {
+          "primary_id": "job_add_id",
+          "relation_to": "Comments",
+          "field": "subject",
+          "save_as": "subjects_comments"
+        }
+      ],
+      "belongs_to": [
+        {
+          "relation_to": "Images",
+          "foreign_id": "image_id"
+        },
+        {
+          "relation_to": "Users",
+          "foreign_id": "user_id"
+        }
+      ],
+      "many": [
+        {
+          "relation_to": "Comments",
+          "primary_id": "job_add_id"
+        }
+      ],
+      "many_through": [
+        {
+          "relation_to": "Skills",
+          "primary_id": "job_add_id",
+          "foreign_id": "skill_id",
+          "through": "JobAddSkills"
+        }
+      ]
+    }
+  },
+  "Comments": {
+    "content_type": "Comment",
+    "type": "entry",
+    "fields": {
+      "title": "subject",
+      "body": "content"
+    },
+    "links": {
+    }
+  },
+  "Skills": {
+    "content_type": "Job Skills",
+    "type": "entry",
+    "fields": {
+    },
+    "links": {
+    }
+  },
+  "Profiles": {
+    "content_type": "Profile",
+    "type": "entry",
+    "fields": {
+    },
+    "links": {
+      "belongs_to": [
+        {
+          "relation_to": "Users",
+          "foreign_id": "user_id"
+        }
+      ]
+    }
+  },
+  "Users": {
+    "content_type": "User",
+    "type": "entry",
+    "fields": {
+    },
+    "links": {
+      "aggregate_has_one": [
+        {
+          "relation_to": "Profiles",
+          "primary_id": "user_id",
+          "field": "nickname",
+          "save_as": "custom_nick"
+        }
+      ],
+      "has_one": [
+        {
+          "relation_to": "Profiles",
+          "primary_id": "user_id"
+        }
+      ],
+      "many": [
+        {
+          "relation_to": "JobAdds",
+          "primary_id": "user_id"
+        }
+      ]
+    }
+  },
+  "Images": {
+    "content_type": "Image",
+    "type": "asset",
+    "fields": {
+    },
+    "links": {
+    }
+  }
 }

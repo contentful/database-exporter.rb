@@ -2,18 +2,19 @@
 data_dir: PATH_TO_ALL_DATA
 
 #Connecting to a database
-adapter: mysql2
+adapter: postgres
 host: localhost
-database: db_name
-user: database_username
-password: database_password
+database: database_name
+user: username
+password: password
 
 # Extract data from models:
 mapped:
   tables:
-  - :example_table_name
-  - :example_table_name_two
-  - :example_table_name_three
+  - :table_name_1
+  - :table_name_2
+  - :table_name_3
+  - :table_name_4
 
 ## MAPPING ##
 mapping_dir: example_data/mapping.json

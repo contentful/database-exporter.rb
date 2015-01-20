@@ -3,6 +3,7 @@ require 'active_support/core_ext/hash/compact'
 require 'active_support/core_ext/hash'
 require 'fileutils'
 require 'sequel'
+require 'logger'
 require_relative 'modules/json_export'
 require_relative 'modules/relations_export'
 require_relative 'modules/utils'
@@ -38,7 +39,9 @@ module Contentful
 
         def save_data_as_json
           tables.each do |table|
+            logger.info "Extracting data from #{"#{table} table"}..."
             model_name = table.to_s.camelize
+            fail ArgumentError, "Missing model name in your mapping.json file. To extract data from #{table}, define structure for this model in mapping.json file or remove #{table} from settings.yml - mapped tables! View README." if missing_model_structure?(model_name)
             content_type_name = mapping[model_name][:content_type]
             save_object_to_file(table, content_type_name, model_name, asset?(model_name) ? config.assets_dir : config.entries_dir)
           end
@@ -59,6 +62,10 @@ module Contentful
         def load_tables
           fail ArgumentError, 'Before importing data from tables, define their names. Check README!' unless config.config['mapped'] && config.config['mapped']['tables']
           config.config['mapped']['tables']
+        end
+
+        def missing_model_structure?(model_name)
+          mapping[model_name].nil?
         end
 
       end

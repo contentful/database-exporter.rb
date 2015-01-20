@@ -104,9 +104,9 @@ Example:
                       ]
         }
     }
-    ```
+ ```
 
-It will assign the associate object, save its ID `(model_name + id)` in JSON file.
+It will assign the associated object and save its ID `(model_name + id)` in the JSON file.
 
 Result:
 

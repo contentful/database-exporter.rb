@@ -21,7 +21,7 @@ This will install the `database-exporter` executable on your system.
 Once you installed the Gem and created the `settings.yml` file, you can invoke the tool using:
 
 ```bash
-database-exporter --config-file settings.yml  --action
+database-exporter --config-file settings.yml --action
 ```
 
 
@@ -71,7 +71,7 @@ This action will create a JSON file including all table names from your database
 
 #### --extract-to-json
 
-In the [settings.yml](https://github.com/contentful/generic-importer.rb#setting-file) file, you need to define the table names that should be exported from the database.
+In the [settings.yml](https://github.com/contentful/database-adapter#setting-file) file, you need to define the table names that should be exported from the database.
 
 The recommended way to get the table names, is using [--list-tables](https://github.com/contentful/database-adapter#--list-tables).
 

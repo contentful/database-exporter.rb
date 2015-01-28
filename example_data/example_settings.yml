@@ -1,0 +1,25 @@
+#PATH to all data
+data_dir: PATH_TO_ALL_DATA
+
+#Connecting to a database
+adapter: postgres
+host: localhost
+database: database_name
+user: username
+password: password
+
+# Extract data from models:
+mapped:
+  tables:
+  - :table_name_1
+  - :table_name_2
+  - :table_name_3
+  - :table_name_4
+
+## MAPPING ##
+mapping_dir: example_data/mapping.json
+contentful_structure_dir: example_data/contentful_structure.json
+
+## CONVERT
+content_model_json: example_data/contentful_model.json
+converted_model_dir: example_data/contentful_structure.json

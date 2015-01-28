@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['rubygems@contentful.com']
   spec.description   = 'Database exporter that prepares content to be imported'
   spec.summary       = 'Exporter for SQL based databases'
-  spec.homepage      = 'https://github.com/contentful/database-adapter.rb'
+  spec.homepage      = 'https://github.com/contentful/database-exporter.rb'
   spec.license       = 'MIT'
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables    << 'database-exporter'

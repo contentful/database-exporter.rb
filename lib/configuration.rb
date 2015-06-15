@@ -24,7 +24,7 @@ module Contentful
       @helpers_dir = "#{data_dir}/helpers"
       @contentful_structure = load_contentful_structure_file
       @db = adapter_setup
-      @converted_model_dir = settings['converted_model_dir']
+      @converted_model_dir = @config['converted_model_dir']
       @content_types = config['content_model_json']
     end
 
@@ -54,7 +54,7 @@ module Contentful
     end
 
     def create_empty_contentful_structure_file
-      File.open(settings['contentful_structure_dir'], 'w') { |file| file.write({}) }
+      File.open(@config['contentful_structure_dir'], 'w') { |file| file.write({}) }
       load_existing_contentful_structure_file
     end
 

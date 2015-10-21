@@ -105,17 +105,17 @@ module Contentful
         end
 
         def map_belongs_to_association(model_name, linked_model, entry, entry_path)
-          ct_link_type = contentful_field_attribute(model_name, linked_model[:relation_to], :type)
-          ct_field_id = contentful_field_attribute(model_name, linked_model[:relation_to], :id)
+          ct_link_type = contentful_field_attribute(model_name, linked_model, :type)
+          ct_field_id = contentful_field_attribute(model_name, linked_model, :id)
           save_belongs_to_entries(linked_model, ct_link_type, ct_field_id, entry, entry_path)
         end
 
-        def contentful_field_attribute(model_name, associated_model, type)
+        def contentful_field_attribute(model_name, associated_model_attributes, type)
           contentful_model_hash(model_name)
           contentful_model_fields(model_name)
-          contentful_associated_model_name(model_name, associated_model)
-          contentful_associated_parameters(model_name, associated_model)
-          config.contentful_structure[model_content_type(model_name)][:fields][model_content_type(associated_model)][type]
+          contentful_associated_model_name(model_name, associated_model_attributes[:relation_to])
+          contentful_associated_parameters(model_name, associated_model_attributes)
+          config.contentful_structure[model_content_type(model_name)][:fields][get_associated_model(associated_model_attributes)][type]
         end
 
         def contentful_model_hash(model_name)
@@ -130,8 +130,9 @@ module Contentful
           fail ArgumentError, "Missing associated model content type name for #{model_name} in MAPPING JSON file" unless model_content_type(associated_model)
         end
 
-        def contentful_associated_parameters(model_name, associated_model)
-          fail ArgumentError, "Missing link field for #{model_content_type(associated_model)} in #{model_name} in contentful structure JSON file!" unless config.contentful_structure[model_content_type(model_name)][:fields][model_content_type(associated_model)]
+        def contentful_associated_parameters(model_name, associated_model_attributes)
+          associated_model = get_associated_model(associated_model_attributes)
+          fail ArgumentError, "Missing link field for #{model_content_type(associated_model)} in #{model_name} in contentful structure JSON file!" unless config.contentful_structure[model_content_type(model_name)][:fields][associated_model]
         end
 
         def save_belongs_to_entries(linked_model, ct_link_type, ct_field_id, entry, entry_path)
@@ -152,6 +153,10 @@ module Contentful
           end
         end
 
+        def get_associated_model(associated_model_attributes)
+          associated_model_attributes.has_key?(:maps_to) ? associated_model_attributes[:maps_to] : model_content_type(associated_model_attributes[:relation_to])
+        end
+
         def save_many_entries(linked_model, ct_field_id, entry, entry_path, related_to, ct_type)
           related_model = linked_model[related_to].underscore
           contentful_name = I18n.transliterate(model_content_type(linked_model[:relation_to])).underscore.tr(' ', '_')
@@ -170,13 +175,13 @@ module Contentful
         end
 
         def map_many_association(model_name, linked_model, entry, entry_path, related_to)
-          ct_field_id = contentful_field_attribute(model_name, linked_model[:relation_to], :id)
+          ct_field_id = contentful_field_attribute(model_name, linked_model, :id)
           ct_type = mapping[linked_model[:relation_to]][:type] if mapping[linked_model[:relation_to]]
           save_many_entries(linked_model, ct_field_id, entry, entry_path, related_to, ct_type)
         end
 
         def map_has_one_association(model_name, linked_model, entry, entry_path, related_to)
-          ct_field_id = contentful_field_attribute(model_name, linked_model[:relation_to], :id)
+          ct_field_id = contentful_field_attribute(model_name, linked_model, :id)
           ct_type = mapping[linked_model[:relation_to]][:type] if mapping[linked_model[:relation_to]]
           save_has_one_entry(linked_model, ct_field_id, entry, entry_path, related_to, ct_type)
         end
@@ -207,7 +212,7 @@ module Contentful
         end
 
         def aggregate_data(model_name, linked_model, entry, entry_path, related_to)
-          ct_field_id = contentful_field_attribute(model_name, linked_model[:relation_to], :id)
+          ct_field_id = contentful_field_attribute(model_name, linked_model, :id)
           save_aggregated_entries(linked_model, ct_field_id, entry, entry_path, related_to)
         end
 

@@ -96,7 +96,7 @@ module Contentful
 
         context 'get_associated_model' do
           it 'calls get_associated_model' do
-            expect_any_instance_of(Export).to receive(:get_associated_model).with({relation_to: "Users", foreign_id: "user_id"}) { "User" }.twice
+            expect_any_instance_of(Export).to receive(:get_associated_model).with({relation_to: "Users", foreign_id: "user_id"}) { "User" }
             @exporter.contentful_field_attribute('Profiles', {relation_to: "Users", foreign_id: "user_id"}, "id")
           end
           it 'returns :maps_to value if present' do
@@ -157,7 +157,7 @@ module Contentful
         end
 
         it 'map_many_association' do
-          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', {:relation_to=>"Comments", :primary_id=>"job_add_id"}, :id) { 'ct_field_id' }
+          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', {relation_to: "Comments", primary_id: "job_add_id"}, :id) { 'ct_field_id' }
           expect_any_instance_of(Export).to receive(:save_many_entries).with({:relation_to => 'Comments',
                                                                               :primary_id => 'job_add_id'},
                                                                              'ct_field_id',
@@ -178,7 +178,7 @@ module Contentful
                                                 {'entry' => 'value'},
                                                 'entry_path',
                                                 'related_to')
-          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', {:relation_to=>"Comments", :primary_id=>"job_add_id"}, :id) { 'ct_field_id' }
+          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', {relation_to: "Comments", primary_id: "job_add_id"}, :id) { 'ct_field_id' }
           @exporter.aggregate_data('model_name',
                                    {:relation_to => 'Comments',
                                     :primary_id => 'job_add_id'},

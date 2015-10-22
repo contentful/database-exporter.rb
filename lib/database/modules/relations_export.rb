@@ -114,25 +114,43 @@ module Contentful
           contentful_model_hash(model_name)
           contentful_model_fields(model_name)
           contentful_associated_model_name(model_name, associated_model_attributes[:relation_to])
-          contentful_associated_parameters(model_name, associated_model_attributes)
-          config.contentful_structure[model_content_type(model_name)][:fields][get_associated_model(associated_model_attributes)][type]
+
+          associated_model = get_associated_model(associated_model_attributes)
+          associated_content_type = model_content_type(model_name)
+          contentful_associated_parameters(model_name, associated_model_attributes[:relation_to], associated_model)
+          config.contentful_structure[associated_content_type][:fields][associated_model][type]
         end
 
         def contentful_model_hash(model_name)
-          fail ArgumentError, "Missing #{model_name} in contentful structure JSON file" unless config.contentful_structure[model_content_type(model_name)]
+          fail ArgumentError, "Missing #{model_name} in contentful structure JSON file" unless model_in_structure?(model_name)
         end
 
         def contentful_model_fields(model_name)
-          fail ArgumentError, "Missing fields in #{model_name} in contentful structure JSON file" unless config.contentful_structure[model_content_type(model_name)][:fields]
+          fail ArgumentError, "Missing fields in #{model_name} in contentful structure JSON file" unless fields_in_structure?(model_name)
         end
 
-        def contentful_associated_model_name(model_name, associated_model)
-          fail ArgumentError, "Missing associated model content type name for #{model_name} in MAPPING JSON file" unless model_content_type(associated_model)
+        def contentful_associated_model_name(model_name, associated_model_name)
+          fail ArgumentError, "Missing associated model content type name for #{model_name} in MAPPING JSON file" unless content_type_in_mapping?(associated_model_name)
         end
 
-        def contentful_associated_parameters(model_name, associated_model_attributes)
-          associated_model = get_associated_model(associated_model_attributes)
-          fail ArgumentError, "Missing link field for #{model_content_type(associated_model)} in #{model_name} in contentful structure JSON file!" unless config.contentful_structure[model_content_type(model_name)][:fields][associated_model]
+        def contentful_associated_parameters(model_name, associated_model_name, associated_model)
+          fail ArgumentError, "Missing link field for #{associated_model_name} in #{model_name} in contentful structure JSON file!" unless associated_model_in_structure?(model_name, associated_model)
+        end
+
+        def model_in_structure?(model_name)
+          config.contentful_structure[model_content_type(model_name)]
+        end
+
+        def fields_in_structure?(model_name)
+          config.contentful_structure[model_content_type(model_name)][:fields]
+        end
+
+        def content_type_in_mapping?(model_name)
+          model_content_type(model_name)
+        end
+
+        def associated_model_in_structure?(model_name, associated_model)
+          config.contentful_structure[model_content_type(model_name)][:fields][associated_model]
         end
 
         def save_belongs_to_entries(linked_model, ct_link_type, ct_field_id, entry, entry_path)

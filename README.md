@@ -559,6 +559,33 @@ Result:
 }
 ```
 
+### Using Field names different to ContentType names
+
+In many cases you will want to use names for your fields that are not the same as the Content Type name. For example,
+a User may have a Manager, and the Manager itself is a User.
+
+For these cases you can use the `:maps_to` property.
+
+Example:
+
+```json
+"User": {
+    ...
+    "links": {
+        "belongs_to": [
+            {
+                "maps_to': "Manager",
+                "relation_to": "User",
+                "primary_id": "id",
+            }
+        ]
+    }
+}
+```
+
+This will work for `:belongs_to`, `:many` and `:many_through` relations.
+
+
 ## Contentful Structure
 
 This file represents our Contentful structure, it defines the remote data types and how they are formed.

@@ -4,7 +4,7 @@ require './lib/database/export'
 module Contentful
   module Exporter
     module Database
-      describe JsonExport do
+      describe RelationsExport do
 
         include_context 'shared_configuration'
 
@@ -91,6 +91,19 @@ module Contentful
           it 'id' do
             result = @exporter.contentful_field_attribute('Profiles', {relation_to: "Users", foreign_id: "user_id"}, 'id')
             expect(result).to eq 'user'
+          end
+        end
+
+        context 'get_associated_model' do
+          it 'calls get_associated_model' do
+            expect_any_instance_of(Export).to receive(:get_associated_model).with({relation_to: "Users", foreign_id: "user_id"}) { "User" }.twice
+            @exporter.contentful_field_attribute('Profiles', {relation_to: "Users", foreign_id: "user_id"}, "id")
+          end
+          it 'returns :maps_to value if present' do
+            expect(@exporter.get_associated_model({maps_to: "Foo", relation_to: "Bar", foreign_id: "foo_bar"})).to eq "Foo"
+          end
+          it "returns related_model's content_type if :maps_to absent" do
+            expect(@exporter.get_associated_model({relation_to: "Users", foreign_id: "user_id"})).to eq "User"
           end
         end
 

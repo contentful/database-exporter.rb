@@ -4,7 +4,7 @@ require './lib/database/export'
 module Contentful
   module Exporter
     module Database
-      describe JsonExport do
+      describe RelationsExport do
 
         include_context 'shared_configuration'
 
@@ -85,12 +85,25 @@ module Contentful
 
         context 'contentful_field_attribute ' do
           it 'type' do
-            result = @exporter.contentful_field_attribute('Profiles', 'Users', 'type')
+            result = @exporter.contentful_field_attribute('Profiles', {relation_to: "Users", foreign_id: "user_id"}, 'type')
             expect(result).to eq 'Entry'
           end
           it 'id' do
-            result = @exporter.contentful_field_attribute('Profiles', 'Users', 'id')
+            result = @exporter.contentful_field_attribute('Profiles', {relation_to: "Users", foreign_id: "user_id"}, 'id')
             expect(result).to eq 'user'
+          end
+        end
+
+        context 'get_associated_model' do
+          it 'calls get_associated_model' do
+            expect_any_instance_of(Export).to receive(:get_associated_model).with({relation_to: "Users", foreign_id: "user_id"}) { "User" }
+            @exporter.contentful_field_attribute('Profiles', {relation_to: "Users", foreign_id: "user_id"}, "id")
+          end
+          it 'returns :maps_to value if present' do
+            expect(@exporter.get_associated_model({maps_to: "Foo", relation_to: "Bar", foreign_id: "foo_bar"})).to eq "Foo"
+          end
+          it "returns related_model's content_type if :maps_to absent" do
+            expect(@exporter.get_associated_model({relation_to: "Users", foreign_id: "user_id"})).to eq "User"
           end
         end
 
@@ -144,7 +157,7 @@ module Contentful
         end
 
         it 'map_many_association' do
-          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', 'Comments', :id) { 'ct_field_id' }
+          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', {relation_to: "Comments", primary_id: "job_add_id"}, :id) { 'ct_field_id' }
           expect_any_instance_of(Export).to receive(:save_many_entries).with({:relation_to => 'Comments',
                                                                               :primary_id => 'job_add_id'},
                                                                              'ct_field_id',
@@ -165,7 +178,7 @@ module Contentful
                                                 {'entry' => 'value'},
                                                 'entry_path',
                                                 'related_to')
-          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', 'Comments', :id) { 'ct_field_id' }
+          expect_any_instance_of(Export).to receive(:contentful_field_attribute).with('model_name', {relation_to: "Comments", primary_id: "job_add_id"}, :id) { 'ct_field_id' }
           @exporter.aggregate_data('model_name',
                                    {:relation_to => 'Comments',
                                     :primary_id => 'job_add_id'},

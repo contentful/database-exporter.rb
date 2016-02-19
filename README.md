@@ -179,7 +179,7 @@ converted_model_dir: PATH_TO_CONVERTED_CONTENT_MODEL_FILE/contentful_structure.j
 To display all actions use the `-h` option:
 
 ```bash
-database-exporter -h
+database-exporter -h --config-file settings.yml
 ```
 
 #### --list-tables

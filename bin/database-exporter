@@ -6,7 +6,7 @@ require_relative '../lib/cli'
 I18n.enforce_available_locales = false
 
 fail ArgumentError, 'Set path for configuration file and define action. More details you can find in README.' if ARGF.argv.empty?
-fail ArgumentError, "Missing '--config-file' argument. The correct is form: 'database-exporter --config-file PATH_TO_CONFIGURATION_FILE --action'. View README." unless ARGV.include?('--config-file')
+fail ArgumentError, "Missing '--config-file' argument. The correct is form: 'database-exporter --config-file PATH_TO_CONFIGURATION_FILE --action'. View README." unless ARGV.include?('--config-file') || ARGV.include?('-h') || ARGV.include?('--help')
 
 Escort::App.create do |app|
   app.summary 'Executable file of Database exporter'

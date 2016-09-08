@@ -118,6 +118,7 @@ database-exporter --config-file settings.yml --action
         }
       }
     ```
+> **Important**: Model names should be the camelized version of the table name, e.g.: `my_table` should be included as `MyTable` in the `mapping.json` file 
 
     After defining the structure for each table you want to extract in the JSON file, use:
 

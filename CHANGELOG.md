@@ -3,6 +3,7 @@
 ## Master
 ### Added
 * `:maps_to` property for `:belongs_to`, `:many` and `:many_through` relations for using different names in mappings [#6](https://github.com/contentful/database-exporter.rb/issues/6)
+* Added error message when Primary ID is missing for relationships
 
 ### Fixes
 * Fix Help command requiring config file

@@ -22,6 +22,7 @@ module Contentful
 
         def save_relation_foreign_keys_for_model(linked_model, relation_type)
           primary_id = linked_model[:primary_id]
+          fail ArgumentError, "Missing #{primary_id} in relationship in Mapping JSON file" unless primary_id
           case relation_type.to_sym
             when :many_through, :aggregate_through
               related_model = linked_model[:through]
@@ -34,8 +35,8 @@ module Contentful
         end
 
         def save_foreign_keys(related_model, primary_id, related_model_id)
-          results = config.db[related_model.underscore.to_sym].each_with_object({}) do |row, results|
-            add_index_to_helper_hash(results, row, primary_id, related_model_id)
+          results = config.db[related_model.underscore.to_sym].each_with_object({}) do |row, res|
+            add_index_to_helper_hash(res, row, primary_id, related_model_id)
           end
           write_json_to_file(config.helpers_dir + "/#{primary_id}_#{related_model.underscore}.json", results)
         end

@@ -1,6 +1,10 @@
 Database to Contentful exporter
 =================
 
+# DEPRECATION WARNING
+
+This tool is now considered deprecated. Use [contentful-database-importer](https://github.com/contentful/contentful-database-importer.rb) instead.
+
 ## Description
 
 Migrate content from a relational database to [contentful.com](https://www.contentful.com).
